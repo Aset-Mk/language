@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translation Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 400px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            margin: 0 10px;
+        }
+        h1 {
+            color: #007bff;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .question {
+            font-size: 22px;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            background-color: #f0f0f0;
+        }
+        textarea {
+            width: calc(100% - 20px);
+            max-width: 100%;
+            height: 100px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: none;
+            margin-bottom: 20px;
+        }
+        .result {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #007bff;
+        }
+        .correct {
+            color: green;
+        }
+        .incorrect {
+            color: red;
+        }
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .button-container button {
+            padding: 12px 24px;
+            font-size: 16px;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            transition: background-color 0.3s ease;
+            width: calc(50% - 20px);
+            max-width: 200px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .button-container button:nth-child(1) {
+            background-color: #28a745;
+        }
+        .button-container button:nth-child(2) {
+            background-color: #ffc107;
+        }
+        .button-container button:nth-child(3) {
+            background-color: #dc3545;
+        }
+        .button-container button:nth-child(4) {
+            background-color: #007bff;
+        }
+        .button-container button:hover {
+            opacity: 0.8;
+        }
+
+        @media (max-width: 600px) {
+            .question {
+                font-size: 18px;
+            }
+            .button-container {
+                flex-direction: column;
+            }
+            .button-container button {
+                width: 100%;
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Translation Test</h1>
+
+        <div class="question" id="questionRussian">Как дела?</div>
+        <textarea id="answerEnglish" placeholder="Введите перевод здесь..."></textarea>
+        <div id="result" class="result"></div>
+
+        <div class="button-container">
+            <button onclick="checkTranslation()">Проверить</button>
+            <button onclick="showAnswer()">Посмотреть ответ</button>
+            <button onclick="speakText()">Озвучить</button>
+            <button onclick="nextQuestion()">Продолжить</button>
+        </div>
+    </div>
+
+    <script>
+        const synth = window.speechSynthesis;
+
+        const russianQuestions = [
+            "Я наконец-то нашел хорошее парковочное место.",
+            "Она получила работу в новом кафе.",
+            "Самолет приземлился вовремя.",
+            "Он получил приглашение на интервью в крупную компанию.",
+            "Посылка оказалась у меня на пороге.",
+            "Она получила отличную скидку на новый телефон.",
+            "Он получил новый проект на работе.",
+            "Кошка мягко приземлилась на ковёр.",
+            "Они получили билеты на концерт.",
+            "Мяч снова приземлился во дворе соседа.",
+            "Я договорился о встрече с начальником.",
+            "Она записалась на уроки рисования.",
+            "Воздушный змей приземлился на дереве.",
+            "Он получил повышение после усердной работы.",
+            "Птица приземлилась на заборе.",
+            "Она получила роль в школьной пьесе.",
+            "Он благополучно приземлился после прыжка с парашютом.",
+            "Камень плюхнулся в воду.",
+            "Я записался на занятие по йоге.",
+            "Машина съехала в кювет после заноса на льду."
+        ];
+
+        const englishAnswers = [
+            "I finally landed a good parking spot.",
+            "She landed a job at the new cafe.",
+            "The plane landed on time.",
+            "He landed an interview with a big company.",
+            "The package landed on my doorstep.",
+            "She landed a great deal on her new phone.",
+            "He landed a new project at work.",
+            "The cat landed softly on the carpet.",
+            "They landed tickets to the concert.",
+            "The ball landed in the neighbor's yard again.",
+            "I landed a meeting with my boss.",
+            "She landed a spot in the art class.",
+            "The kite landed in a tree.",
+            "He landed a promotion after his hard work.",
+            "The bird landed on the fence.",
+            "She landed a role in the school play.",
+            "He landed safely after the parachute jump.",
+            "The stone landed in the water with a splash.",
+            "I landed a spot in the yoga class.",
+            "The car landed in a ditch after skidding on ice."
+        ];
+
+        let currentIndex = 0;
+
+        function displayQuestion(index) {
+            document.getElementById('questionRussian').textContent = russianQuestions[index];
+            document.getElementById('answerEnglish').value = '';
+            document.getElementById('result').textContent = '';
+        }
+
+        
+        function nextQuestion() {
+            const normalizeText = (text) => text.toLowerCase().replace(/[^a-z]/g, '');
+
+            const expectedAnswer = englishAnswers[currentIndex].split(' ');
+            const userAnswer = document.getElementById('answerEnglish').value.split(' ');
+
+            let resultHtml = "";
+            let isCorrect = true;
+
+            for (let i = 0; i < expectedAnswer.length; i++) {
+                const normalizedExpected = normalizeText(expectedAnswer[i]);
+                const normalizedUser = normalizeText(userAnswer[i] || '');
+
+                if (normalizedUser === normalizedExpected) {
+                    resultHtml += `<span style="color: green">${userAnswer[i] || ''}</span> `;
+                } else {
+                    resultHtml += `<span style="color: red">${userAnswer[i] || ''}</span> `;
+                    isCorrect = false;
+                }
+            }
+
+            showResult(isCorrect ? "Правильный ответ!" : "Ответ неправильный.", isCorrect);
+            document.getElementById('result').innerHTML += `<div>${resultHtml}</div>`;
+
+            if(isCorrect){
+                currentIndex = Math.floor(Math.random() * russianQuestions.length);
+                displayQuestion(currentIndex);
+            }
+            
+        }
+
+        function checkTranslation() {
+            const normalizeText = (text) => text.toLowerCase().replace(/[^a-z]/g, '');
+
+            const expectedAnswer = englishAnswers[currentIndex].split(' ');
+            const userAnswer = document.getElementById('answerEnglish').value.split(' ');
+
+            let resultHtml = "";
+            let isCorrect = true;
+
+            for (let i = 0; i < expectedAnswer.length; i++) {
+                const normalizedExpected = normalizeText(expectedAnswer[i]);
+                const normalizedUser = normalizeText(userAnswer[i] || '');
+
+                if (normalizedUser === normalizedExpected) {
+                    resultHtml += `<span style="color: green">${userAnswer[i] || ''}</span> `;
+                } else {
+                    resultHtml += `<span style="color: red">${userAnswer[i] || ''}</span> `;
+                    isCorrect = false;
+                }
+            }
+
+            showResult(isCorrect ? "Правильный ответ!" : "Ответ неправильный.", isCorrect);
+            document.getElementById('result').innerHTML += `<div>${resultHtml}</div>`;
+        }
+
+        function showAnswer() {
+            const answer = englishAnswers[currentIndex];
+            document.getElementById('result').innerHTML = `<span class="correct">Правильный ответ: ${answer}</span>`;
+        }
+
+        function speakText() {
+            const text = document.getElementById('answerEnglish').value;
+            const speechSynthesisUtterance = new SpeechSynthesisUtterance(text);
+            speechSynthesisUtterance.lang = 'en-GB';
+            speechSynthesisUtterance.voice = getGoogleUKVoice();
+            synth.speak(speechSynthesisUtterance);
+        }
+
+        function getGoogleUKVoice() {
+            const voices = synth.getVoices();
+            for (let i = 0; i < voices.length; i++) {
+                if (voices[i].name === 'Google UK English Male') {
+                    return voices[i];
+                }
+            }
+            return voices[0];
+        }
+
+        function showResult(message, isCorrect) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = message;
+            resultDiv.className = isCorrect ? 'result correct' : 'result incorrect';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            currentIndex = Math.floor(Math.random() * russianQuestions.length);
+            displayQuestion(currentIndex);
+        });
+    </script>
+</body>
+</html>
